@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>JS Mediator</title>
+  </head>
+  <body>
+    <h1>JS Mediator</h1>
+    <div id="output">
+
+    </div>
+    <script type="text/javascript">
+      console.log('--- JS Mediator ---');
+
+      var Mediator = function () {
+        console.log('mediator');
+      }
+
+      Mediator.prototype = {
+
+        name : 'mediator',
+        callbacks : {},
+        subscribe : function (channel, callback, context) {
+          if (!this.callbacks[channel]) {
+            this.callbacks[channel] = [];
+          }
+          this.callbacks[channel].push(callback.bind(context));
+        },
+        publish : function (channel, data) {
+          var callbacks = this.callbacks[channel];
+          console.log(callbacks);
+          var i = callbacks.length;
+          while (i--) {
+            callbacks[i](data);
+          }
+        }
+      };
+
+      var Core = function () {
+        console.log('core');
+      }
+
+      Core.prototype = {
+
+        init : function () {
+          mediator.subscribe('click', this.onClick, this);
+          mediator.publish('load');
+        },
+        onClick : function (e) {
+          console.log(e);
+        }
+      }
+
+      var Module = function (name) {
+        console.log(name);
+        this.name = name;
+      }
+
+      Module.prototype = {
+
+        init : function () {
+          mediator.subscribe('load', this.onLoad, this);
+        },
+        onLoad : function () {
+          console.log(this);
+          console.log(this.name + ' load');
+        },
+        click : function () {
+          mediator.publish('click', { x : 2, y : 3 });
+        }
+      }
+
+      var mediator = new Mediator();
+      var core = new Core();
+      var module1 = new Module('module1');
+      var module2 = new Module('module2');
+
+      module1.init();
+      module2.init();
+      core.init();
+      module2.click();
+
+    </script>
+  </body>
+</html>
